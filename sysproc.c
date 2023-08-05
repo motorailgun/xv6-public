@@ -89,3 +89,8 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+// shows list of processes
+int sys_proclist(void) {
+  return proclist();
+}

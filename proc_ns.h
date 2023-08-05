@@ -7,5 +7,3 @@ struct proc_ns {
     char* name;
     struct proc_ns *children_ns;
 };
-
-struct proc_ns root_proc_ns;

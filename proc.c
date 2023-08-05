@@ -14,6 +14,8 @@ struct {
 
 static struct proc *initproc;
 
+int pid_namespace_table[NPROC][NPROC];
+
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
@@ -115,6 +117,17 @@ found:
   return p;
 }
 
+// allocate process with process namespace
+static struct proc* allocproc_with_ns(int namespace) {
+  struct proc* process = allocproc();
+  if (process == 0) {
+    return 0;
+  }
+
+  process->pid_namespace = namespace;
+  return process;
+}
+
 //PAGEBREAK: 32
 // Set up first user process.
 void
@@ -123,7 +136,7 @@ userinit(void)
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
-  p = allocproc();
+  p = allocproc_with_ns(0);
   
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
@@ -531,4 +544,8 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+int proclist(void) {
+  return 0;
 }
