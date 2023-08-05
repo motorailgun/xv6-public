@@ -155,6 +155,8 @@ main(void)
     }
   }
 
+  printf(1, "sh pid = %d\n", getpid());
+
   // Read and run input commands.
   while(getcmd(buf, sizeof(buf)) >= 0){
     if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
@@ -164,6 +166,18 @@ main(void)
         printf(2, "cannot cd %s\n", buf+3);
       continue;
     }
+
+    if(buf[0] == 'e' && buf[1] == 'x' && buf[2] == 'i' && buf[3] == 't') {
+      char possibly_crlf = buf[4];
+
+      if(possibly_crlf == '\n' || possibly_crlf == '\r') {
+        printf(2, "exit: exiting sh(pid = %d)...\n", getpid());
+        exit();
+      }
+    }
+
+    printf(2, "%s\n", buf);
+
     if(fork1() == 0)
       runcmd(parsecmd(buf));
     wait();
