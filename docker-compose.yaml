@@ -9,6 +9,21 @@ services:
       - type: bind
         source: ./shared
         target: /build
+    working_dir: /build
     entrypoint:
-      - sleep
-      - infinity
+      - make
+      - xv6.img
+      - fs.img
+  
+  qemu:
+    build:
+      context: .
+      dockerfile: Dockerfile.qemu
+    volumes:
+      - type: bind
+        source: ./shared
+        target: /build
+    working_dir: /build
+    entrypoint:
+      - make
+      - qemu-nox
