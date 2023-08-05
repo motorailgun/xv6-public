@@ -1,3 +1,5 @@
+#include "proc_ns.h"
+
 // Per-CPU state
 struct cpu {
   uchar apicid;                // Local APIC ID

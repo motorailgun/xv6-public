@@ -4,6 +4,7 @@ struct file;
 struct inode;
 struct pipe;
 struct proc;
+struct proc_ns;
 struct rtcdate;
 struct spinlock;
 struct sleeplock;
