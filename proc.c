@@ -546,6 +546,9 @@ procdump(void)
   }
 }
 
-int proclist(void) {
+int processes_list(struct proc* proc_ptr) {
+  for(int i = 0; i < NPROC; i++) {
+    *(proc_ptr + i) = ptable.proc[i];
+  }
   return 0;
 }

@@ -92,5 +92,11 @@ sys_uptime(void)
 
 // shows list of processes
 int sys_proclist(void) {
-  return proclist();
+  char* addr;
+  
+  if(argptr(0, &addr, NPROC) < 0) {
+    return -1;
+  }
+
+  return processes_list((struct proc*)addr);
 }

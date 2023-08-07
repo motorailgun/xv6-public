@@ -122,7 +122,7 @@ int             wait(void);
 void            wakeup(void*);
 void            yield(void);
 
-int             proclist(void);
+int             processes_list(struct proc*);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
