@@ -547,8 +547,14 @@ procdump(void)
 }
 
 int processes_list(struct proc* proc_ptr) {
+  int count = 0;
+
   for(int i = 0; i < NPROC; i++) {
-    *(proc_ptr + i) = ptable.proc[i];
+    if(ptable.proc[i].state != UNUSED) {
+      *(proc_ptr + count) = ptable.proc[i];
+      count += 1;
+    }
   }
-  return 0;
+
+  return count;
 }
