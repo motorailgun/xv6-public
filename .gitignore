@@ -16,3 +16,6 @@ mkfs
 .gdbinit
 
 shared/
+
+.cache
+compile_commands.json

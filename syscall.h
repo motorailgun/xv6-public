@@ -22,3 +22,4 @@
 #define SYS_close  21
 
 #define SYS_proclist 22
+#define SYS_execpidns 23

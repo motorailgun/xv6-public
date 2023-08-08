@@ -117,8 +117,8 @@ found:
   return p;
 }
 
-// allocate process with process namespace
-static struct proc* allocproc_with_ns(int namespace) {
+// allocate process with pid namespace
+static struct proc* allocproc_with_pns(int namespace) {
   struct proc* process = allocproc();
   if (process == 0) {
     return 0;
@@ -136,7 +136,7 @@ userinit(void)
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
-  p = allocproc_with_ns(0);
+  p = allocproc_with_pns(0);
   
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
@@ -198,7 +198,7 @@ fork(void)
   struct proc *curproc = myproc();
 
   // Allocate process.
-  if((np = allocproc()) == 0){
+  if((np = allocproc_with_pns(curproc->pid_namespace)) == 0){
     return -1;
   }
 
@@ -549,10 +549,15 @@ procdump(void)
 int processes_list(struct proc* proc_ptr) {
   int count = 0;
 
+  struct proc* process = myproc();
+  int pid_namespace = process->pid_namespace;
+
   for(int i = 0; i < NPROC; i++) {
     if(ptable.proc[i].state != UNUSED) {
-      *(proc_ptr + count) = ptable.proc[i];
-      count += 1;
+      if(pid_namespace == 0 || ptable.proc[i].pid_namespace == pid_namespace) {
+        *(proc_ptr + count) = ptable.proc[i];
+        count += 1;
+      }
     }
   }
 

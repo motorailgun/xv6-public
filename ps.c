@@ -33,21 +33,21 @@ struct proc {
 };
 
 int main(int argc, char *argv[]) {
-    printf(1, "here1\n");
-    
-    struct proc* proclist_ptr = malloc(NPROC * sizeof(struct proc));
-    int count = proclist(proclist_ptr);
-    
-    for(int i = 0; i < count; i++) {
-      struct proc* cur_ptr = proclist_ptr + i;
-      printf(2, "pid: %d, name: %s, namespace: %d\n", 
-        cur_ptr->pid,
-        cur_ptr->name,
-        cur_ptr->pid_namespace
-      );
-    }
-    
-    printf(2, "here2\n");
+  printf(1, "here1\n");
   
-    exit();
+  struct proc* proclist_ptr = malloc(NPROC * sizeof(struct proc));
+  int count = proclist(proclist_ptr);
+  
+  for(int i = 0; i < count; i++) {
+    struct proc* cur_ptr = proclist_ptr + i;
+    printf(2, "pid: %d, name: %s, namespace: %d\n", 
+      cur_ptr->pid,
+      cur_ptr->name,
+      cur_ptr->pid_namespace
+    );
+  }
+  
+  printf(2, "here2\n");
+
+  exit();
 }
