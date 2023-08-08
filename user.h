@@ -26,6 +26,7 @@ int sleep(int);
 int uptime(void);
 int proclist(struct proc*);
 int execpidns(int, char*, char**);
+int getpidns(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

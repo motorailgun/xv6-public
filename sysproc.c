@@ -42,6 +42,10 @@ sys_getpid(void)
   return myproc()->pid;
 }
 
+int sys_getpidns(void) {
+  return myproc()->pid_namespace;
+}
+
 int
 sys_sbrk(void)
 {

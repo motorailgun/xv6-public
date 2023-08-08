@@ -100,6 +100,10 @@ execpidns(int pid_ns, char *path, char **argv)
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
 
+  if(myproc()->pid_namespace != 0) {
+    pid_ns = myproc()->pid_namespace;
+  }
+  
   curproc->pid_namespace = pid_ns;
   
   switchuvm(curproc);

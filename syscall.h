@@ -23,3 +23,4 @@
 
 #define SYS_proclist 22
 #define SYS_execpidns 23
+#define SYS_getpidns 24

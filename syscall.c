@@ -106,6 +106,7 @@ extern int sys_uptime(void);
 
 extern int sys_proclist(void);
 extern int sys_execpidns(void);
+extern int sys_getpidns(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -132,6 +133,7 @@ static int (*syscalls[])(void) = {
 
 [SYS_proclist] sys_proclist,
 [SYS_execpidns] sys_execpidns,
+[SYS_getpidns] sys_getpidns,
 };
 
 void

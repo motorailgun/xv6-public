@@ -32,3 +32,4 @@ SYSCALL(uptime)
 
 SYSCALL(proclist)
 SYSCALL(execpidns)
+SYSCALL(getpidns)
