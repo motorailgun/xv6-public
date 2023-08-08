@@ -457,7 +457,7 @@ int sys_execpidns(void) {
   for(i=0;; i++){
     if(i >= NELEM(argv))
       return -1;
-    if(fetchint(uargv+8*i, (int*)&uarg) < 0)
+    if(fetchint(uargv+4*i, (int*)&uarg) < 0)
       return -1;
     if(uarg == 0){
       argv[i] = 0;
