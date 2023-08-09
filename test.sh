@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm -rf shared/*
+
 unalias cp || true && \
 cp -f ./* shared/
 

@@ -1,3 +1,4 @@
+#include "proc_pid_ns.h"
 #include "types.h"
 #include "stat.h"
 #include "user.h"
@@ -29,7 +30,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 
-  int pid_namespace;           // Process namspace number
+  struct pid_ns pid_namespace;           // Process namspace number
 };
 
 int main(int argc, char *argv[]) {

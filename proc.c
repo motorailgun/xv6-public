@@ -7,6 +7,8 @@
 #include "proc.h"
 #include "spinlock.h"
 
+extern struct pid_ns root_pid_ns;
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -137,7 +139,7 @@ userinit(void)
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
-  p = allocproc_with_pns(0);
+  p = allocproc_with_pns(root_pid_ns);
   
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
@@ -487,6 +489,20 @@ wakeup(void *chan)
   release(&ptable.lock);
 }
 
+// return pid namespace for given pid
+struct pid_ns* get_pid_ns_by_pid(int pid) {
+  acquire(&ptable.lock);
+  for(int i = 0; i < NPROC; i++) {
+    if(ptable.proc[i].pid == pid) {
+      release(&ptable.lock);
+      return &(ptable.proc[i].pid_namespace);
+    }
+  }
+
+  release(&ptable.lock);
+  return (struct pid_ns*)-1;
+}
+
 // Kill the process with the given pid.
 // Process won't exit until it returns
 // to user space (see trap in trap.c).
@@ -498,7 +514,8 @@ kill(int pid)
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
-      if(p->pid_namespace == myproc()->pid_namespace || myproc()->pid_namespace == 0) {
+      if(search_for_parent(&p->pid_namespace, myproc()->pid_namespace.ns_id) == 1
+         || myproc()->pid_namespace.ns_id == root_pid_ns.ns_id) {
         p->killed = 1;
         // Wake process from sleep if necessary.
         if(p->state == SLEEPING)

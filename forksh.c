@@ -6,13 +6,22 @@ void usage(void) {
     printf(2, "usage: foksh namespace\n");
 }
 
-int main(int argc, char* argv[]) {
-    if(argc < 2) {
-        printf(2, "no enough arguments\n");
-        usage();
-        exit();
-    }
+void panic(char *s)
+{
+  printf(2, "%s\n", s);
+  exit();
+}
 
+int fork2(void) {
+  int pid;
+
+  pid = forkpidns();
+  if(pid == -1)
+    panic("fork2");
+  return pid;
+}
+
+int main(int argc, char* argv[]) {
     int pid_namespace = atoi(argv[1]);
     if(pid_namespace < 0 ){
         printf(2, "given namespace invalid\n");
@@ -22,7 +31,13 @@ int main(int argc, char* argv[]) {
 
     char* str = "sh";
     char* arg[] = {str, 0};
-    execpidns(pid_namespace, str, arg);
-    printf(2, "execpidns on %d / sh failed\n", pid_namespace);
+
+    // デフォのshでどういう実装を？
+    if(fork2() == 0) {
+        exec(str, arg);
+        printf(2, "execpidns on %d / sh failed\n", pid_namespace);
+    }
+
+    wait();
     exit();
 }

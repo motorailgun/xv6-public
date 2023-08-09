@@ -18,10 +18,16 @@ enum pid_ns_relation {
     EQUAL, PARENT, CHILD, DIVORCED,
 };
 
-int pid_ns_usage_table[NPROC];
+struct {
+    struct spinlock lock;
+    int pid_ns_usage_table[NPROC];
+} pns_table;
 
 void pidns_init(void) {
-    memset(pid_ns_usage_table, 0, sizeof(pid_ns_usage_table));
+    memset(pns_table.pid_ns_usage_table, 0, sizeof(pns_table.pid_ns_usage_table));
+    pns_table.pid_ns_usage_table[0] = 1;
+
+    initlock(&pns_table.lock, "pnstable");
 }
 
 int search_for_child(struct pid_ns* start, int ns_id) {
@@ -73,14 +79,18 @@ enum pid_ns_relation pid_ns_relation(struct pid_ns* base, struct pid_ns* relativ
 }
 
 struct pid_ns alloc_pid_ns(struct pid_ns* parent) {
+    acquire(&pns_table.lock);
+
     for(int i = 0; i < NPROC; i++) {
-        if(!pid_ns_usage_table[i]) {
+        if(!pns_table.pid_ns_usage_table[i]) {
             struct pid_ns new_pid_ns = {
                 .ns_id = i,
                 .parent = parent,
                 .children = {0},
             };
-
+            
+            pns_table.pid_ns_usage_table[i] = 1;
+            release(&pns_table.lock);
             return new_pid_ns;
         }
     }
@@ -91,5 +101,6 @@ struct pid_ns alloc_pid_ns(struct pid_ns* parent) {
         .children = {0},
     };
 
+    release(&pns_table.lock);
     return invalid_pid_ns;
 }
