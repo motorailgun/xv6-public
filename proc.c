@@ -26,6 +26,7 @@ void
 pinit(void)
 {
   initlock(&ptable.lock, "ptable");
+  pidns_init();
 }
 
 // Must be called with interrupts disabled
@@ -118,13 +119,13 @@ found:
 }
 
 // allocate process with pid namespace
-static struct proc* allocproc_with_pns(int namespace) {
+static struct proc* allocproc_with_pns(struct pid_ns pid_ns) {
   struct proc* process = allocproc();
   if (process == 0) {
     return 0;
   }
 
-  process->pid_namespace = namespace;
+  process->pid_namespace = pid_ns;
   return process;
 }
 
@@ -554,11 +555,11 @@ int processes_list(struct proc* proc_ptr) {
   int count = 0;
 
   struct proc* process = myproc();
-  int pid_namespace = process->pid_namespace;
+  int pid_namespace = process->pid_namespace.ns_id;
 
   for(int i = 0; i < NPROC; i++) {
     if(ptable.proc[i].state != UNUSED) {
-      if(pid_namespace == 0 || ptable.proc[i].pid_namespace == pid_namespace) {
+      if(pid_namespace == 0 || ptable.proc[i].pid_namespace.ns_id == pid_namespace) {
         *(proc_ptr + count) = ptable.proc[i];
         count += 1;
       }
@@ -566,4 +567,55 @@ int processes_list(struct proc* proc_ptr) {
   }
 
   return count;
+}
+
+// fork with new pid namespace
+int
+forkpidns(void)
+{
+  int i, pid;
+  struct proc *np;
+  struct proc *curproc = myproc();
+
+  struct pid_ns *current_ns = &(curproc->pid_namespace);
+  struct pid_ns new_ns = alloc_pid_ns(current_ns);
+  if(new_ns.ns_id < 1) {
+    return -1;
+  }
+
+  // Allocate process.
+  if((np = allocproc_with_pns(new_ns)) == 0){
+    return -1;
+  }
+
+  // Copy process state from proc.
+  if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
+    kfree(np->kstack);
+    np->kstack = 0;
+    np->state = UNUSED;
+    return -1;
+  }
+  np->sz = curproc->sz;
+  np->parent = curproc;
+  *np->tf = *curproc->tf;
+
+  // Clear %eax so that fork returns 0 in the child.
+  np->tf->eax = 0;
+
+  for(i = 0; i < NOFILE; i++)
+    if(curproc->ofile[i])
+      np->ofile[i] = filedup(curproc->ofile[i]);
+  np->cwd = idup(curproc->cwd);
+
+  safestrcpy(np->name, curproc->name, sizeof(curproc->name));
+
+  pid = np->pid;
+
+  acquire(&ptable.lock);
+
+  np->state = RUNNABLE;
+
+  release(&ptable.lock);
+
+  return pid;
 }

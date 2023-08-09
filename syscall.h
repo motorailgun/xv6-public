@@ -22,5 +22,5 @@
 #define SYS_close  21
 
 #define SYS_proclist 22
-#define SYS_execpidns 23
+#define SYS_forkns 23
 #define SYS_getpidns 24

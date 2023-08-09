@@ -25,7 +25,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int proclist(struct proc*);
-int execpidns(int, char*, char**);
+int forkpidns(void);
 int getpidns(void);
 
 // ulib.c

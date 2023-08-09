@@ -105,7 +105,7 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 
 extern int sys_proclist(void);
-extern int sys_execpidns(void);
+extern int sys_forkns(void);
 extern int sys_getpidns(void);
 
 static int (*syscalls[])(void) = {
@@ -132,7 +132,7 @@ static int (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 
 [SYS_proclist] sys_proclist,
-[SYS_execpidns] sys_execpidns,
+[SYS_execpidns] sys_forkns,
 [SYS_getpidns] sys_getpidns,
 };
 

@@ -43,7 +43,7 @@ sys_getpid(void)
 }
 
 int sys_getpidns(void) {
-  return myproc()->pid_namespace;
+  return myproc()->pid_namespace.ns_id;
 }
 
 int
@@ -103,4 +103,10 @@ int sys_proclist(void) {
   }
 
   return processes_list((struct proc*)addr);
+}
+
+int
+sys_forkpidns(void)
+{
+  return forkpidns();
 }

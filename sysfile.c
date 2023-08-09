@@ -442,30 +442,3 @@ sys_pipe(void)
   fd[1] = fd1;
   return 0;
 }
-
-int sys_execpidns(void) {
-  char *path, *argv[MAXARG];
-  int i, pid_namespace;
-  uint uargv, uarg;
-
-  argint(0, &pid_namespace);
-
-  if(argstr(1, &path) < 0 || argint(2, (int*)&uargv) < 0){
-    return -1;
-  }
-  memset(argv, 0, sizeof(argv));
-  for(i=0;; i++){
-    if(i >= NELEM(argv))
-      return -1;
-    if(fetchint(uargv+4*i, (int*)&uarg) < 0)
-      return -1;
-    if(uarg == 0){
-      argv[i] = 0;
-      break;
-    }
-    if(fetchstr(uarg, &argv[i]) < 0)
-      return -1;
-  }
-
-  return execpidns(pid_namespace, path, argv);
-}

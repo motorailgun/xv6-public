@@ -31,5 +31,5 @@ SYSCALL(sleep)
 SYSCALL(uptime)
 
 SYSCALL(proclist)
-SYSCALL(execpidns)
+SYSCALL(forkpidns)
 SYSCALL(getpidns)

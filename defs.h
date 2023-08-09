@@ -4,7 +4,7 @@ struct file;
 struct inode;
 struct pipe;
 struct proc;
-struct proc_ns;
+struct pid_ns;
 struct rtcdate;
 struct spinlock;
 struct sleeplock;
@@ -126,6 +126,14 @@ void            wakeup(void*);
 void            yield(void);
 
 int             processes_list(struct proc*);
+int             forkpidns(void);
+
+// proc_pid_ns.c
+void pidns_init(void);
+int search_for_child(struct pid_ns*, int);
+int search_for_parent(struct pid_ns*, int);
+enum pid_ns_relation pid_ns_relation(struct pid_ns*, struct pid_ns*);
+struct pid_ns alloc_pid_ns(struct pid_ns*);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

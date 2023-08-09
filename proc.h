@@ -1,3 +1,4 @@
+#include "proc_pid_ns.h"
 
 // Per-CPU state
 struct cpu {
@@ -51,7 +52,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 
-  int pid_namespace;           // Process namspace number
+  struct pid_ns pid_namespace;           // Process namspace
 };
 
 // Process memory is laid out contiguously, low addresses first:
