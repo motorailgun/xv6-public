@@ -127,6 +127,8 @@ void            yield(void);
 
 int             processes_list(struct proc*);
 int             forkpidns(void);
+int             forkchroot(char*);
+struct proc*    get_process_by_pid(int);
 
 // proc_pid_ns.c
 void pidns_init(void);

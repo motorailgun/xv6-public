@@ -37,31 +37,18 @@ __attribute__((packed)) struct proc {
 };
 
 int main(int argc, char *argv[]) {
-  printf(1, "here1\n");
-  
   struct proc* proclist_ptr = malloc(NPROC * sizeof(struct proc));
   int count = proclist(proclist_ptr);
   
-  printf(2, "offset of mount_ns = %d\n", (void*)&proclist_ptr->mount_namespace - (void*)proclist_ptr);
   for(int i = 0; i < count; i++) {
     struct proc* cur_ptr = proclist_ptr + i;
-    printf(2, "pid: %d, name: %s, pid namespace: %d, inode*: %d\n", 
+    printf(2, "pid: %d, name: %s, pid namespace: %d ", 
       cur_ptr->pid,
       cur_ptr->name,
-      cur_ptr->pid_namespace,
-      ((int*)(((void*)cur_ptr) + 388))
+      cur_ptr->pid_namespace
     );
-
-    for(int j = 0; j < sizeof(struct proc); j++){
-      printf(2, "%x", *((unsigned char*)cur_ptr + j));
-      if(j % 80 == 0) {
-        printf(2, "\n");
-      }
-    }
-    printf(2, "\n\n");
+    printf(2, "inode*: %p\n", cur_ptr->mount_namespace.root_inode);
   }
-  
-  printf(2, "here2\n");
 
   exit();
 }

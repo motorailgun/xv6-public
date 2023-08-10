@@ -1,4 +1,3 @@
-#include "proc_mount_ns.h"
 #include "types.h"
 #include "defs.h"
 #include "param.h"
@@ -131,6 +130,7 @@ static struct proc* allocproc_with_pns(struct pid_ns pid_ns) {
 
   process->pid_namespace = pid_ns;
   process->mount_namespace = myproc()->mount_namespace;
+  cprintf("mount namespace inode*: %p\n", process->mount_namespace);
   return process;
 }
 
@@ -596,12 +596,10 @@ int processes_list(struct proc* proc_ptr) {
 
   acquire(&ptable.lock);
 
-  cprintf("offset of mount_ns(in kernel) = %d\n", (void*)&process->mount_namespace - (void*)process);
   for(int i = 0; i < NPROC; i++) {
     if(ptable.proc[i].state != UNUSED) {
       if(pid_namespace == 0 || ptable.proc[i].pid_namespace.ns_id == pid_namespace) {
         *(proc_ptr + count) = ptable.proc[i];
-        memset(&((proc_ptr + count)->mount_namespace), 0xFF, sizeof(struct mount_ns));
         count += 1;
       }
     }
@@ -716,4 +714,17 @@ int forkchroot(char* path) {
   release(&ptable.lock);
 
   return pid;
+}
+
+struct proc* get_process_by_pid(int pid) {
+  acquire(&ptable.lock);
+  for(int i = 0; i < NPROC; i++) {
+    if (ptable.proc[i].pid == pid) {
+      release(&ptable.lock);
+      return &ptable.proc[i];
+    }
+  }
+
+  release(&ptable.lock);
+  return (struct proc*)-1;
 }

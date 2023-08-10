@@ -27,6 +27,7 @@ int uptime(void);
 int proclist(struct proc*);
 int forkpidns(void);
 int getpidns(void);
+int forkchroot(char *);
 
 // ulib.c
 int stat(const char*, struct stat*);

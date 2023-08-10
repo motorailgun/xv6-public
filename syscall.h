@@ -24,3 +24,4 @@
 #define SYS_proclist 22
 #define SYS_forkpidns 23
 #define SYS_getpidns 24
+#define SYS_forkchroot 25

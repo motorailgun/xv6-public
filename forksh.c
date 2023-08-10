@@ -12,7 +12,7 @@ void panic(char *s)
   exit();
 }
 
-int fork2(void) {
+int forkn(void) {
   int pid;
 
   pid = forkpidns();
@@ -32,10 +32,9 @@ int main(int argc, char* argv[]) {
     char* str = "sh";
     char* arg[] = {str, 0};
 
-    // デフォのshでどういう実装を？
-    if(fork2() == 0) {
+    if(forkn() == 0) {
         exec(str, arg);
-        printf(2, "execpidns on %d / sh failed\n", pid_namespace);
+        printf(2, "forkpidns on %d / sh failed\n", pid_namespace);
     }
 
     wait();

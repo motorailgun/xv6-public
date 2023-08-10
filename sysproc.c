@@ -110,3 +110,14 @@ sys_forkpidns(void)
 {
   return forkpidns();
 }
+
+int
+sys_forkchroot(void) {
+  char* addr;
+
+  if(argstr(0, &addr) < 0) {
+    return -1;
+  }
+
+  return forkchroot(addr);
+}
