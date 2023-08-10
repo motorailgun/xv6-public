@@ -1,3 +1,4 @@
+#include "proc_mount_ns.h"
 #include "types.h"
 #include "defs.h"
 #include "param.h"
@@ -8,6 +9,7 @@
 #include "spinlock.h"
 
 extern struct pid_ns root_pid_ns;
+extern struct mount_ns root_mount_ns;
 
 struct {
   struct spinlock lock;
@@ -128,6 +130,19 @@ static struct proc* allocproc_with_pns(struct pid_ns pid_ns) {
   }
 
   process->pid_namespace = pid_ns;
+  process->mount_namespace = myproc()->mount_namespace;
+  return process;
+}
+
+// allocate process with pid/mount namespace
+static struct proc* allocproc_with_ns(struct pid_ns pid_ns, struct mount_ns mount_ns) {
+  struct proc* process = allocproc();
+  if (process == 0) {
+    return 0;
+  }
+
+  process->pid_namespace = pid_ns;
+  process->mount_namespace = mount_ns;
   return process;
 }
 
@@ -139,7 +154,11 @@ userinit(void)
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
-  p = allocproc_with_pns(root_pid_ns);
+  mountns_init();
+
+  cprintf("root_inode*: %d, parent_ns: %d\n", root_mount_ns.root_inode, root_mount_ns.parent_ns);
+  p = allocproc_with_ns(root_pid_ns, root_mount_ns);
+  cprintf("root_inode*: %d, parent_ns: %d\n", p->mount_namespace.root_inode, p->mount_namespace.parent_ns);
   
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
@@ -515,7 +534,8 @@ kill(int pid)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
       if(search_for_parent(&p->pid_namespace, myproc()->pid_namespace.ns_id) == 1
-         || myproc()->pid_namespace.ns_id == root_pid_ns.ns_id) {
+         || myproc()->pid_namespace.ns_id == root_pid_ns.ns_id
+         || myproc()->pid_namespace.ns_id == p->pid_namespace.ns_id) {
         p->killed = 1;
         // Wake process from sleep if necessary.
         if(p->state == SLEEPING)
@@ -574,14 +594,20 @@ int processes_list(struct proc* proc_ptr) {
   struct proc* process = myproc();
   int pid_namespace = process->pid_namespace.ns_id;
 
+  acquire(&ptable.lock);
+
+  cprintf("offset of mount_ns(in kernel) = %d\n", (void*)&process->mount_namespace - (void*)process);
   for(int i = 0; i < NPROC; i++) {
     if(ptable.proc[i].state != UNUSED) {
       if(pid_namespace == 0 || ptable.proc[i].pid_namespace.ns_id == pid_namespace) {
         *(proc_ptr + count) = ptable.proc[i];
+        memset(&((proc_ptr + count)->mount_namespace), 0xFF, sizeof(struct mount_ns));
         count += 1;
       }
     }
   }
+
+  release(&ptable.lock);
 
   return count;
 }
@@ -602,6 +628,61 @@ forkpidns(void)
 
   // Allocate process.
   if((np = allocproc_with_pns(new_ns)) == 0){
+    return -1;
+  }
+
+  // Copy process state from proc.
+  if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
+    kfree(np->kstack);
+    np->kstack = 0;
+    np->state = UNUSED;
+    return -1;
+  }
+  np->sz = curproc->sz;
+  np->parent = curproc;
+  *np->tf = *curproc->tf;
+
+  // Clear %eax so that fork returns 0 in the child.
+  np->tf->eax = 0;
+
+  for(i = 0; i < NOFILE; i++)
+    if(curproc->ofile[i])
+      np->ofile[i] = filedup(curproc->ofile[i]);
+  np->cwd = idup(curproc->cwd);
+
+  safestrcpy(np->name, curproc->name, sizeof(curproc->name));
+
+  pid = np->pid;
+
+  acquire(&ptable.lock);
+
+  np->state = RUNNABLE;
+
+  release(&ptable.lock);
+
+  return pid;
+}
+
+int forkchroot(char* path) {
+  int i, pid;
+  struct proc *np;
+  struct proc *curproc = myproc();
+
+  struct pid_ns *current_ns = &(curproc->pid_namespace);
+  struct pid_ns new_ns = alloc_pid_ns(current_ns);
+
+  struct mount_ns new_mns = gen_mount_ns(path);
+
+  if(new_ns.ns_id < 1) {
+    return -1;
+  }
+
+  if(new_mns.root_inode < 0) {
+    return -1;
+  }
+
+  // Allocate process.
+  if((np = allocproc_with_ns(new_ns, new_mns)) == 0){
     return -1;
   }
 

@@ -1,4 +1,5 @@
 #include "proc_pid_ns.h"
+#include "proc_mount_ns.h"
 
 // Per-CPU state
 struct cpu {
@@ -26,7 +27,7 @@ extern int ncpu;
 // The layout of the context matches the layout of the stack in swtch.S
 // at the "Switch stacks" comment. Switch doesn't save eip explicitly,
 // but it is on the stack and allocproc() manipulates it.
-struct context {
+__attribute__((packed)) struct context {
   uint edi;
   uint esi;
   uint ebx;
@@ -37,7 +38,7 @@ struct context {
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 // Per-process state
-struct proc {
+__attribute__((packed)) struct proc {
   uint sz;                     // Size of process memory (bytes)
   pde_t* pgdir;                // Page table
   char *kstack;                // Bottom of kernel stack for this process
@@ -52,7 +53,8 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 
-  struct pid_ns pid_namespace;           // Process namspace
+  struct pid_ns pid_namespace;     // Process namspace
+  struct mount_ns mount_namespace; // chroot root inode
 };
 
 // Process memory is laid out contiguously, low addresses first:

@@ -135,6 +135,10 @@ int search_for_parent(struct pid_ns*, int);
 enum pid_ns_relation pid_ns_relation(struct pid_ns*, struct pid_ns*);
 struct pid_ns alloc_pid_ns(struct pid_ns*);
 
+// proc_mount_ns.c
+void mountns_init(void);
+struct mount_ns gen_mount_ns(char*);
+
 // swtch.S
 void            swtch(struct context**, struct context*);
 
