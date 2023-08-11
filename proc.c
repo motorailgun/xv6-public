@@ -130,7 +130,6 @@ static struct proc* allocproc_with_pns(struct pid_ns pid_ns) {
 
   process->pid_namespace = pid_ns;
   process->mount_namespace = myproc()->mount_namespace;
-  cprintf("mount namespace inode*: %p\n", process->mount_namespace);
   return process;
 }
 
@@ -669,18 +668,18 @@ int forkchroot(char* path) {
   struct pid_ns *current_ns = &(curproc->pid_namespace);
   struct pid_ns new_ns = alloc_pid_ns(current_ns);
 
-  struct mount_ns new_mns = gen_mount_ns(path);
+  // struct mount_ns new_mns = gen_mount_ns(path);
 
   if(new_ns.ns_id < 1) {
     return -1;
   }
 
-  if(new_mns.root_inode < 0) {
+  /* if(new_mns.root_inode < 0) {
     return -1;
-  }
+  } */
 
   // Allocate process.
-  if((np = allocproc_with_ns(new_ns, new_mns)) == 0){
+  if((np = allocproc_with_ns(new_ns, myproc()->mount_namespace)) == 0){
     return -1;
   }
 

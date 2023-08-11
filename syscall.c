@@ -135,7 +135,7 @@ static int (*syscalls[])(void) = {
 [SYS_proclist] sys_proclist,
 [SYS_forkpidns] sys_forkpidns,
 [SYS_getpidns] sys_getpidns,
-[SYS_forkpidns] sys_forkchroot,
+[SYS_forkchroot] sys_forkchroot,
 };
 
 void
